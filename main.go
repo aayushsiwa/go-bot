@@ -20,7 +20,7 @@ func main() {
 
 	dg, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	dg.AddHandler(bot.HandleMessage)
@@ -29,7 +29,7 @@ func main() {
 
 	err = dg.Open()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	httpapi.Discord = dg
