@@ -29,26 +29,30 @@ func Init() {
 		Name:        "rss",
 		Description: "Get curated RSS feed",
 		Execute: func(ctx *Context) string {
-			log.Printf("Executing RSS command with args: %v", ctx.Args)
+
 			if len(ctx.Args) == 0 {
-				return "Please provide a feed (tech/gaming)"
+				return "❌ Please provide a feed (tech/gaming)"
 			}
 
 			feed := ctx.Args[0]
 
 			go func() {
-				feeds, err := services.GetFeedItems(feed)
-				if err != nil {
-					log.Println(err)
-				}
-				if err != nil || len(feeds) == 0 {
+				items, err := services.GetFeedItems(feed)
+				if err != nil || len(items) == 0 {
+					log.Println("RSS error:", err)
+
+					_, err := ctx.Session.ChannelMessageSend(ctx.ChannelID,
+						"❌ Failed to fetch RSS feed")
+					if err != nil {
+						return
+					}
 					return
 				}
 
-				SendRSS(ctx.Session, ctx.ChannelID, ctx.GuildID, feeds, feed)
+				SendRSS(ctx.Session, ctx.ChannelID, ctx.GuildID, items, feed)
 			}()
 
-			return "Sending you the latest " + feed + " news! 🚀"
+			return "📰 Fetching " + feed + " feed"
 		},
 		Options: []*discordgo.ApplicationCommandOption{
 			{
