@@ -12,12 +12,15 @@ import (
 var Cfg *config.Config
 
 func StartRSSCron(send func(feed string, items []*gofeed.Item)) {
-	loc, _ := time.LoadLocation("Asia/Kolkata")
+	loc, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		log.Fatal(err)
+	}
 	c := cron.New(cron.WithLocation(loc))
 
 	lastSeen := make(map[string]string)
 
-	_, err := c.AddFunc(Cfg.RSSCronSchedule, func() {
+	_, err = c.AddFunc(Cfg.RSSCronSchedule, func() {
 		log.Println("Running RSS cron...")
 
 		for name, url := range FeedMap {

@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -37,7 +38,9 @@ func (w *CPUWorker) Name() string {
 func (w *CPUWorker) Start() {
 	w.wg.Add(1)
 
+	log.Println("Starting CPUWorker with threshold", w.threshold, "and interval", w.interval)
 	go func() {
+		log.Println("CPUWorker started")
 		defer w.wg.Done()
 
 		ticker := time.NewTicker(w.interval)

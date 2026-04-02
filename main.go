@@ -17,6 +17,9 @@ import (
 
 func main() {
 	cfg := config.Load()
+	services.Cfg = cfg
+
+	log.Println(services.Cfg)
 
 	dg, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
@@ -41,12 +44,11 @@ func main() {
 
 		log.Println("HTTP server running on :" + cfg.PORT)
 		if err := http.ListenAndServe(":"+cfg.PORT, nil); err != nil {
-			log.Fatal(err)
+			log.Fatalf("error %v", err)
 		}
 	}()
 
 	// ✅ Worker system (unchanged)
-	services.Cfg = cfg
 	manager := services.NewManager()
 
 	cpuWorker := services.NewCPUWorker(
