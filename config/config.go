@@ -25,10 +25,13 @@ func Load() *Config {
 	// load ..env (ignore error in prod)
 	_ = godotenv.Load()
 
-	rssFeedSize, _ := strconv.Atoi(mustGetEnv("RSS_FEED_SIZE"))
+	rssFeedSize, err := strconv.Atoi(mustGetEnv("RSS_FEED_SIZE"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	cfg = &Config{
-		PORT:           os.Getenv("PORT"),
+		PORT:           mustGetEnv("PORT"),
 		ApplicationID:  mustGetEnv("APPLICATION_ID"),
 		GuildID:        mustGetEnv("GUILD_ID"),
 		GuildChannelID: mustGetEnv("GUILD_CHANNEL_ID"),
@@ -51,4 +54,8 @@ func mustGetEnv(key string) string {
 		log.Fatalf("Missing required .env variable: %s", key)
 	}
 	return val
+}
+
+func GetEnv(key string) string {
+	return os.Getenv(key)
 }
