@@ -2,7 +2,7 @@ FROM golang:1.26-alpine AS builder
 
 WORKDIR /src
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -12,7 +12,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /out/syspulse .
 
 FROM alpine:3.21
 
-RUN apk add --no-cache ca-certificates && \
+RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S app && \
     adduser -S app -G app
 
