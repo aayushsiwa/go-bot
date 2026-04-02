@@ -35,7 +35,8 @@ func main() {
 
 	// ✅ Start HTTP server (for interactions)
 	go func() {
-		http.HandleFunc("/interactions", httpapi.Handler)
+		http.HandleFunc("/interactions", httpapi.InteractionsHandler)
+		http.HandleFunc("/health", httpapi.Health)
 
 		log.Println("HTTP server running on :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {

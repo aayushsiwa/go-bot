@@ -39,7 +39,7 @@ func verify(signature, timestamp string, body []byte) bool {
 	return ed25519.Verify(pub, message, sig)
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func InteractionsHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 
 	// 🔐 VERIFY SIGNATURE
