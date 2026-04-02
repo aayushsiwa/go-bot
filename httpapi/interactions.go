@@ -47,7 +47,7 @@ func InteractionsHandler(w http.ResponseWriter, r *http.Request) {
 	timestamp := r.Header.Get("X-Signature-Timestamp")
 
 	if !verify(signature, timestamp, body) {
-		http.Error(w, "invalid request signature", 401)
+		http.Error(w, "invalid request signature", http.StatusUnauthorized)
 		return
 	}
 
@@ -55,20 +55,25 @@ func InteractionsHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var interaction Interaction
-	json.NewDecoder(r.Body).Decode(&interaction)
+	err := json.NewDecoder(r.Body).Decode(&interaction)
+	if err != nil {
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 
 	// ✅ PING RESPONSE
 	if interaction.Type == 1 {
-		w.Write([]byte(`{"type":1}`))
+		_, err := w.Write([]byte(`{"type":1}`))
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	var feed string
 	var optsLog []string
 	var args []string
-	args = append(args, interaction.ChannelID, interaction.GuildID)
 
 	if interaction.Type == 2 {
 		name := interaction.Data.Name
@@ -78,17 +83,17 @@ func InteractionsHandler(w http.ResponseWriter, r *http.Request) {
 			if opt.Name == "feed" {
 				feed = opt.Value
 			}
-			args = append(args, opt.Value)
+			if feed == "" {
+				feed = "tech" // default OR return error
+			}
+
+			args = append(args, feed)
 		}
 
 		log.Printf("Received command: %s | options: %s",
 			name,
 			strings.Join(optsLog, ", "),
 		)
-
-		if feed == "" {
-			feed = "tech" // default OR return error
-		}
 
 		ctx := &bot.Context{
 			Session:   Discord,
@@ -103,12 +108,15 @@ func InteractionsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"type": 4,
 			"data": map[string]string{
 				"content": res,
 			},
 		})
+		if err != nil {
+			return
+		}
 
 		return
 	}
