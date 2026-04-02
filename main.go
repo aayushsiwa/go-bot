@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/mmcdole/gofeed"
 )
 
 func main() {
@@ -45,6 +46,7 @@ func main() {
 	}()
 
 	// ✅ Worker system (unchanged)
+	services.Cfg = cfg
 	manager := services.NewManager()
 
 	cpuWorker := services.NewCPUWorker(
@@ -59,11 +61,8 @@ func main() {
 		},
 	)
 
-	services.StartRSSCron(func(msg string) {
-		_, err := dg.ChannelMessageSend(cfg.GuildChannelID, msg)
-		if err != nil {
-			return
-		}
+	services.StartRSSCron(func(feed string, items []*gofeed.Item) {
+		bot.SendRSS(dg, cfg.GuildChannelID, cfg.GuildID, items, feed)
 	})
 
 	manager.Add(cpuWorker)

@@ -1,47 +1,47 @@
 package services
 
 import (
-	"fmt"
+	"discord-bot/config"
 	"log"
 	"time"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/robfig/cron/v3"
 )
 
-func StartRSSCron(send func(string)) {
+var Cfg *config.Config
+
+func StartRSSCron(send func(feed string, items []*gofeed.Item)) {
 	loc, _ := time.LoadLocation("Asia/Kolkata")
 	c := cron.New(cron.WithLocation(loc))
 
 	lastSeen := make(map[string]string)
 
-	c.AddFunc("0 5 * * *", func() {
+	_, err := c.AddFunc("30 8 * * *", func() {
 		log.Println("Running RSS cron...")
 
 		for name, url := range FeedMap {
 
-			items, err := FetchLatest(url, 3)
+			items, err := FetchLatest(url, Cfg.RSSFeedSize)
 			if err != nil || len(items) == 0 {
 				continue
 			}
 
 			latest := items[0].Link
 
-			// skip if already seen
 			if lastSeen[name] == latest {
-				continue // ✅ not return
+				continue
 			}
 
 			lastSeen[name] = latest
 
-			msg := fmt.Sprintf("📰 **%s (%s)**\n", name, url)
-
-			for i, item := range items {
-				msg += fmt.Sprintf("%d. [%s](%s)\n", i+1, item.Title, item.Link)
-			}
-
-			send(msg)
+			// ✅ call injected function
+			send(name, items)
 		}
 	})
+	if err != nil {
+		return
+	}
 
 	c.Start()
 }
