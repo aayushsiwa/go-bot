@@ -39,8 +39,8 @@ func main() {
 		http.HandleFunc("/interactions", httpapi.InteractionsHandler)
 		http.HandleFunc("/health", httpapi.Health)
 
-		log.Println("HTTP server running on :8080")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Println("HTTP server running on :" + cfg.PORT)
+		if err := http.ListenAndServe(":"+cfg.PORT, nil); err != nil {
 			log.Fatal(err)
 		}
 	}()
