@@ -19,8 +19,6 @@ func main() {
 	cfg := config.Load()
 	services.Cfg = cfg
 
-	log.Println(services.Cfg)
-
 	dg, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
 		log.Println(err)
