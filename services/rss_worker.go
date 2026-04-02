@@ -17,7 +17,7 @@ func StartRSSCron(send func(feed string, items []*gofeed.Item)) {
 
 	lastSeen := make(map[string]string)
 
-	_, err := c.AddFunc("30 8 * * *", func() {
+	_, err := c.AddFunc(Cfg.RSSCronSchedule, func() {
 		log.Println("Running RSS cron...")
 
 		for name, url := range FeedMap {

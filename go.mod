@@ -4,7 +4,6 @@ go 1.26.0
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
-	github.com/joho/godotenv v1.5.1
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
