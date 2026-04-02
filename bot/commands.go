@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"discord-bot/services"
 	"fmt"
 	"log"
 	"strings"
@@ -37,19 +36,14 @@ func HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	parts := strings.Split(m.Content[1:], " ")
 	name := parts[0]
 	args := parts[1:]
+
 	log.Printf("[%s] %s", m.Author.Username, name)
 
-	if name == "rss" {
-		items, err := services.GetFeedItems(args[0])
-		if err != nil {
-			log.Printf("Error getting feed items: %v", err)
-		}
-		SendRSS(s, m.ChannelID, m.GuildID, items, args[0])
-		return
-	}
-
 	ctx := &Context{
-		Args: args,
+		Session:   s,
+		ChannelID: m.ChannelID,
+		GuildID:   m.GuildID,
+		Args:      args,
 	}
 
 	if res, ok := Execute(name, ctx); ok {
@@ -57,16 +51,15 @@ func HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if err != nil {
 			return
 		}
+	} else {
+		_, err := s.ChannelMessageSend(m.ChannelID, "❌ Unknown command")
+		if err != nil {
+			return
+		}
 	}
 }
 
 func SendRSSAsMessages(s *discordgo.Session, channelID string, items []*gofeed.Item) {
-
-	_, err := s.ChannelMessageSend(channelID, "📰 RSS Updates")
-	if err != nil {
-		return
-	}
-
 	for i, item := range items {
 		content := fmt.Sprintf("%d. [%s](%s)", i+1, item.Title, item.Link)
 		_, err := s.ChannelMessageSend(channelID, content)
@@ -79,13 +72,13 @@ func SendRSSAsMessages(s *discordgo.Session, channelID string, items []*gofeed.I
 func SendRSSInThread(s *discordgo.Session, channelID string, items []*gofeed.Item, feedName string) {
 
 	// 1. Send base message
-	msg, err := s.ChannelMessageSend(channelID, "📰 "+feedName+" updates")
+	msg, err := s.ChannelMessageSend(channelID, strings.ToUpper(feedName))
 	if err != nil {
 		return
 	}
 
 	// 2. Create thread
-	thread, err := s.MessageThreadStart(channelID, msg.ID, feedName+" Feed", 60)
+	thread, err := s.MessageThreadStart(channelID, msg.ID, "Feed -> ", 60)
 	if err != nil {
 		return
 	}
@@ -102,6 +95,14 @@ func SendRSSInThread(s *discordgo.Session, channelID string, items []*gofeed.Ite
 }
 
 func SendRSS(s *discordgo.Session, channelID, guildID string, items []*gofeed.Item, feed string) {
+
+	if len(items) == 0 {
+		_, err := s.ChannelMessageSend(channelID, "❌ No items found")
+		if err != nil {
+			return
+		}
+		return
+	}
 
 	if guildID == "" {
 		SendRSSAsMessages(s, channelID, items)
