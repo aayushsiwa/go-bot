@@ -22,6 +22,10 @@ func main() {
 	log.Println("Token length:", len(cfg.BotToken))
 
 	dg, err := discordgo.New("Bot " + cfg.BotToken)
+	if err != nil {
+		log.Printf("new ERROR: %#v\n", err)
+		log.Fatal(err)
+	}
 
 	dg.AddHandler(bot.HandleMessage)
 	dg.AddHandler(bot.HandleInteraction) // ✅ important
