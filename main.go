@@ -37,11 +37,14 @@ func main() {
 		cmds, _ := s.ApplicationCommands(cfg.ApplicationID, cfg.GuildID)
 		log.Println("Existing commands:", len(cmds))
 
-		err := bot.RegisterSlashCommands(s, cfg.ApplicationID, cfg.GuildID)
-		if err != nil {
-			log.Printf("RegisterSlashCommands ERROR: %#v\n", err)
-			log.Fatal(err)
-		}
+		go func() {
+			time.Sleep(5 * time.Second)
+
+			err := bot.RegisterSlashCommands(s, cfg.ApplicationID, cfg.GuildID)
+			if err != nil {
+				log.Printf("REGISTER FAILED: %+v\n", err)
+			}
+		}()
 	})
 
 	err = dg.Open()
