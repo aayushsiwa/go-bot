@@ -17,6 +17,10 @@ func main() {
 	cfg := config.Load()
 	services.Cfg = cfg
 
+	log.Println("ApplicationID:", cfg.ApplicationID)
+	log.Println("GuildID:", cfg.GuildID)
+	log.Println("Token length:", len(cfg.BotToken))
+
 	dg, err := discordgo.New("Bot " + cfg.BotToken)
 
 	dg.AddHandler(bot.HandleMessage)
