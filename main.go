@@ -3,10 +3,8 @@ package main
 import (
 	"discord-bot/bot"
 	"discord-bot/config"
-	"discord-bot/httpapi"
 	"discord-bot/services"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -20,31 +18,30 @@ func main() {
 	services.Cfg = cfg
 
 	dg, err := discordgo.New("Bot " + cfg.BotToken)
-	if err != nil {
-		log.Println(err)
-	}
 
 	dg.AddHandler(bot.HandleMessage)
+	dg.AddHandler(bot.HandleInteraction) // ✅ important
+
 	bot.Init()
-	bot.RegisterSlashCommands(dg, cfg.GuildID, cfg.ApplicationID)
+	bot.RegisterSlashCommands(dg, cfg.ApplicationID, cfg.GuildID)
 
 	err = dg.Open()
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 
-	httpapi.Discord = dg
+	// httpapi.Discord = dg
 
-	// ✅ Start HTTP server (for interactions)
-	go func() {
-		http.HandleFunc("/interactions", httpapi.InteractionsHandler)
-		http.HandleFunc("/health", httpapi.Health)
+	// // ✅ Start HTTP server (for interactions)
+	// go func() {
+	// 	http.HandleFunc("/interactions", httpapi.InteractionsHandler)
+	// 	http.HandleFunc("/health", httpapi.Health)
 
-		log.Println("HTTP server running on :" + cfg.PORT)
-		if err := http.ListenAndServe(":"+cfg.PORT, nil); err != nil {
-			log.Fatalf("error %v", err)
-		}
-	}()
+	// 	log.Println("HTTP server running on :" + cfg.PORT)
+	// 	if err := http.ListenAndServe(":"+cfg.PORT, nil); err != nil {
+	// 		log.Fatalf("error %v", err)
+	// 	}
+	// }()
 
 	// ✅ Worker system (unchanged)
 	manager := services.NewManager()

@@ -111,3 +111,44 @@ func SendRSS(s *discordgo.Session, channelID, guildID string, items []*gofeed.It
 
 	SendRSSInThread(s, channelID, items, feed)
 }
+
+func HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+
+	data := i.ApplicationCommandData()
+
+	// Convert options → args
+	var args []string
+	for _, opt := range data.Options {
+		args = append(args, opt.StringValue())
+	}
+
+	ctx := &Context{
+		Session:   s,
+		ChannelID: i.ChannelID,
+		GuildID:   i.GuildID,
+		Args:      args,
+	}
+
+	// 🔥 Reuse your existing system
+	if res, ok := Execute(data.Name, ctx); ok {
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: res,
+			},
+		})
+		if err != nil {
+			log.Println("interaction error:", err)
+		}
+	} else {
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "❌ Unknown command",
+			},
+		})
+	}
+}

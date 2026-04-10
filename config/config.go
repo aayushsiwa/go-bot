@@ -22,7 +22,7 @@ var cfg *Config
 
 func Load() *Config {
 	// load ..env (ignore error in prod)
-	//_ = godotenv.Load()
+	// _ = godotenv.Load()
 
 	rssFeedSize, err := strconv.Atoi(mustGetEnv("RSS_FEED_SIZE"))
 	if err != nil {
