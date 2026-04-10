@@ -70,19 +70,34 @@ func Init() {
 	})
 }
 
-func RegisterSlashCommands(s *discordgo.Session, appID string, guildID string) {
-	for _, cmd := range Registry {
+func RegisterSlashCommands(s *discordgo.Session, appID string, guildID string) error {
 
+	existing, err := s.ApplicationCommands(appID, guildID)
+	if err != nil {
+		return err
+	}
+
+	// delete old commands
+	for _, cmd := range existing {
+		err := s.ApplicationCommandDelete(appID, guildID, cmd.ID)
+		if err != nil {
+			log.Println("delete error:", err)
+			return err
+		}
+	}
+
+	// create fresh
+	for _, cmd := range Registry {
 		_, err := s.ApplicationCommandCreate(appID, guildID, &discordgo.ApplicationCommand{
 			Name:        cmd.Name,
 			Description: cmd.Description,
 			Options:     cmd.Options,
 		})
 		if err != nil {
-			return
+			return err
 		}
-
 		log.Printf("Registered command: %s", cmd.Name)
-
 	}
+
+	return nil
 }

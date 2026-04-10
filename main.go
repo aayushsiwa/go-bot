@@ -27,10 +27,22 @@ func main() {
 	dg.AddHandler(bot.HandleInteraction) // ✅ important
 
 	bot.Init()
-	bot.RegisterSlashCommands(dg, cfg.ApplicationID, cfg.GuildID)
+	dg.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+		log.Println("Bot is ready!")
+
+		cmds, _ := s.ApplicationCommands(cfg.ApplicationID, cfg.GuildID)
+		log.Println("Existing commands:", len(cmds))
+
+		err := bot.RegisterSlashCommands(s, cfg.ApplicationID, cfg.GuildID)
+		if err != nil {
+			log.Printf("RegisterSlashCommands ERROR: %#v\n", err)
+			log.Fatal(err)
+		}
+	})
 
 	err = dg.Open()
 	if err != nil {
+		log.Printf("dg.Open ERROR: %#v\n", err)
 		log.Fatal(err)
 	}
 
