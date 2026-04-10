@@ -8,7 +8,7 @@ import (
 )
 
 func Init() {
-
+	log.Println("Initialising bot")
 	Register(Command{
 		Name:        "ping",
 		Description: "Check if bot is alive",
@@ -71,7 +71,7 @@ func Init() {
 }
 
 func RegisterSlashCommands(s *discordgo.Session, appID string, guildID string) error {
-
+	log.Println("Registering slash commands")
 	existing, err := s.ApplicationCommands(appID, guildID)
 	if err != nil {
 		return err

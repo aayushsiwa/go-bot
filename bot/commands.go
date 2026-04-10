@@ -25,6 +25,7 @@ type Command struct {
 type CommandFunc func(args []string) string
 
 func HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
+	log.Println("Handle Mesaage")
 	if m.Author.Bot {
 		return
 	}
@@ -113,6 +114,7 @@ func SendRSS(s *discordgo.Session, channelID, guildID string, items []*gofeed.It
 }
 
 func HandleInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	log.Println("Handle Interaction")
 	if i.Type != discordgo.InteractionApplicationCommand {
 		return
 	}
